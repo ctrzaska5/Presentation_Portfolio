@@ -1,0 +1,95 @@
+---
+title: "Major Currency Exchange Rates"
+subtitle: "A Comparison with USD"
+author: "Christopher Trzaska"
+institute: "American University"
+date: "March 27, 2024"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = 'center')
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(patchwork)
+library(readxl)
+UN_ExRates <- read_excel("UN_ExRates.xlsx")
+View(UN_ExRates)
+```
+
+class: center, middle
+
+#What does the data describe?
+This data set is the UN's 2022 Global Currency Exchange Rate data. Considering the U.S. dollar's status as the global reserve currency, the strength or weakness of any given international currency is measured by its U.S. dollar exchange rate. This is defined as how much of a foreign currency 1 USD can buy. The more foreign currency 1 USD buys, the weaker that currency is. Included in this specific presentation is an analysis of the exchange rates of 5 other major global currencies and how those strengths have changed over from 2005 to 2022. 
+
+---
+class: center, top
+# The Euro
+##USD's Main Competition
+```{r, fig.height=4, fig.width=10}
+UN_ExRates <- UN_ExRates |>
+  rename(Country = ...2)
+
+EU_over_time=
+  UN_ExRates|>
+  filter(`National currency` == "Euro (EUR)", Country == "Euro Area", Series == "Exchange rates: end of period (national currency per US dollar)")|>
+  ggplot(aes(x = `Year`, y = Value))+
+  geom_line(linewidth = 1, color = "green")+
+  theme(
+    axis.title = element_text(size = 16)
+  )+
+  theme_bw()+
+  labs(x = "Year", y = "Exchange Rate (USD per EUR)")+
+  scale_y_continuous(
+    limits = c(0.70, 1.0) 
+  )+
+  ggtitle("USD/Eur Exchange Rate by Year")
+
+EU_over_time
+```
+This figure highlights the Euro's USD exchange rate from 2005 to 2022. The Euro has remained strong against the dollar, consistently maintaining a robust ~.75 EUR per USD exchange rate. However as the the European sovereign debt crisis began to take its toll, the Euro shed some of its strength. This has held since 2015, with a short lived improvement that coincided with massive Eurozone stimulus in response to the COVID-19 Pandemic.
+---
+class: center, top 
+#Global Exchange Rates (2005-2022)
+```{r, fig.height=8, fig.width=16}
+
+comparison_col=
+  UN_ExRates|>
+  filter(Country %in% c("Euro Area", "Canada", "Australia", "United Kingdom", "Switzerland"), Series == "Exchange rates: end of period (national currency per US dollar)", Year == "2022")|>
+  ggplot(aes(x = Country, y = Value, fill = Country))+
+  geom_col()+
+  labs(x = "Country", y = "Exchange Rate (Currency per USD)")+
+  ggtitle("Exchange Rates in 2022")+
+  theme_bw()
+
+comparison_line=
+  UN_ExRates|>
+  filter(Country %in% c("Euro Area", "Canada", "Australia", "United Kingdom", "Switzerland"), Series == "Exchange rates: end of period (national currency per US dollar)")|>
+  ggplot(aes(x = Year, y = Value, color = Country))+
+  geom_line()+
+  labs(x = "Country", y = "Exchange Rate (Currency per USD)")+
+  ggtitle("Exchange Rate by Year")+
+  scale_x_continuous(
+    limits = c(2005, 2022)
+  )+
+  theme_bw()
+  
+comp_final=comparison_line+comparison_col
+
+comp_final
+```
+ As of 2022 (the most recent data contained in the UN's Data Set), the strongest currency against the US dollar is the British Pound, while the weakest is the Australian Dollar. This largely mirrors what was the case in 2005. Over time, the Australian and Canadian dollars have largely moved in tandem while the Swiss Franc and British Pound are notable for their consistent strength.
